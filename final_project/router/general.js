@@ -13,53 +13,70 @@ public_users.post("/register", (req, res) => {
         // Check if the user does not already exist
         if (!isValid(username)) {
             // Add the new user to the users array
-            users.push({"username": username, "password": password});
-            return res.status(200).json({message: "Public User successfully registered!"});
+            users.push({ "username": username, "password": password });
+            return res.status(200).json({ message: "Public User successfully registered!" });
         } else {
-            return res.status(404).json({message: "Public User already exists!"});
+            return res.status(404).json({ message: "Public User already exists!" });
         }
     }
     // Return error if username or password is missing
-    return res.status(404).json({message: "Unable to register user."});
+    return res.status(404).json({ message: "Unable to register user." });
 });
 
+
 // Get the book list available in the shop
-public_users.get('/', function (req, res) {
-    return res.send(JSON.stringify(books, null, 4));
+public_users.get('/', async function (req, res) {
+    let getBooks = new Promise((resolve, reject) => {
+        resolve(books)
+    });
+    const ret_books = await getBooks;
+    res.send(JSON.stringify(ret_books, null, 4));
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn', function (req, res) {
+public_users.get('/isbn/:isbn', async function (req, res) {
     const isbn = req.params.isbn
-    return res.send(JSON.stringify(books[isbn], null, 4));
+    let getBooksISBN = new Promise((resolve, reject) => {
+        resolve(books[isbn])
+    });
+    const book = await getBooksISBN;
+    return res.send(JSON.stringify(book, null, 4));
 });
 
 // Get book details based on author
-public_users.get('/author/:author', function (req, res) {
+public_users.get('/author/:author', async function (req, res) {
     const author = req.params.author
-    var to_ret = {};
-    for (var isbn in books) {
-        if (books.hasOwnProperty(isbn)) {
-            if (books[isbn]["author"] === author) {
-                to_ret[isbn] = books[isbn];
+    let getBookByAuthor = new Promise((resolve, reject) => {
+        var to_ret = {};
+        for (var isbn in books) {
+            if (books.hasOwnProperty(isbn)) {
+                if (books[isbn]["author"] === author) {
+                    to_ret[isbn] = books[isbn];
+                }
             }
         }
-    }
-    return res.send(JSON.stringify(to_ret, null, 4));
+        resolve(to_ret);
+    });
+    const authBooks = await getBookByAuthor;
+    return res.send(JSON.stringify(authBooks, null, 4));
 });
 
 // Get all books based on title
-public_users.get('/title/:title', function (req, res) {
+public_users.get('/title/:title', async function (req, res) {
     const title = req.params.title
-    var to_ret = {};
-    for (var isbn in books) {
-        if (books.hasOwnProperty(isbn)) {
-            if (books[isbn]["title"] === title) {
-                to_ret[isbn] = books[isbn];
+    let getBookByTitle = new Promise((resolve, reject) => {
+        var to_ret = {};
+        for (var isbn in books) {
+            if (books.hasOwnProperty(isbn)) {
+                if (books[isbn]["title"] === title) {
+                    to_ret[isbn] = books[isbn];
+                }
             }
         }
-    }
-    return res.send(JSON.stringify(to_ret, null, 4));
+        resolve(to_ret);
+    });
+    const titleBooks = await getBookByTitle;
+    return res.send(JSON.stringify(titleBooks, null, 4));
 });
 
 //  Get book review
